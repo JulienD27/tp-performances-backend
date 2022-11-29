@@ -2,25 +2,25 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 ## Question 2 : Utilisation Server Timing API
 
-**Temps de chargement initial de la page** : TEMPS
+**Temps de chargement initial de la page** : 31.3
 
 **Choix des méthodes à analyser** :
 
-- `METHOD_1` TEMPS
-- `METHOD_2` TEMPS
-- `METHOD_3` TEMPS
+- `getCheapest` 16.53s
+- `getReviews` 8.76s
+- `getMetas` 4.29s
 
 
 
 ## Question 3 : Réduction du nombre de connexions PDO
 
-**Temps de chargement de la page** : TEMPS
+**Temps de chargement de la page** : 26.4
 
 **Temps consommé par `getDB()`** 
 
-- **Avant** TEMPS
+- **Avant** 1.05s
 
-- **Après** TEMPS
+- **Après** 1.71ms
 
 
 ## Question 4 : Délégation des opérations de filtrage à la base de données
