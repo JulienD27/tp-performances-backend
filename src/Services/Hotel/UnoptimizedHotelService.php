@@ -3,7 +3,9 @@
 namespace App\Services\Hotel;
 
 use App\Common\FilterException;
+use App\Common\SingletonPDO;
 use App\Common\SingletonTrait;
+use App\Common\Timers;
 use App\Entities\HotelEntity;
 use App\Entities\RoomEntity;
 use App\Services\Room\RoomService;
@@ -30,7 +32,10 @@ class UnoptimizedHotelService extends AbstractHotelService {
    * @noinspection PhpUnnecessaryLocalVariableInspection
    */
   protected function getDB () : PDO {
-    $pdo = new PDO( "mysql:host=db;dbname=tp;charset=utf8mb4", "root", "root" );
+    $timer = Timers::getInstance();
+    $timerId = $timer->startTimer('getDB');
+    $pdo = SingletonPDO::get();
+    $timer->endTimer('getDB', $timerId);
     return $pdo;
   }
   
@@ -44,18 +49,17 @@ class UnoptimizedHotelService extends AbstractHotelService {
    * @return string|null
    */
   protected function getMeta ( int $userId, string $key ) : ?string {
+    $timer = Timers::getInstance();
+    $timerId = $timer->startTimer('getMeta');
     $db = $this->getDB();
-    $stmt = $db->prepare( "SELECT * FROM wp_usermeta" );
-    $stmt->execute();
+    $stmt = $db->prepare( "SELECT meta_value FROM wp_usermeta WHERE user_id = :userId AND meta_key = :meta_key;" );
+    $stmt->execute( [ 'userId' => $userId, 'meta_key' => $key ] );
     
-    $result = $stmt->fetchAll( PDO::FETCH_ASSOC );
-    $output = null;
-    foreach ( $result as $row ) {
-      if ( $row['user_id'] === $userId && $row['meta_key'] === $key )
-        $output = $row['meta_value'];
-    }
+    $result = $stmt->fetch( PDO::FETCH_ASSOC );
+
+    $timer->endTimer('getMeta', $timerId);
     
-    return $output;
+    return $result[0]['meta_value'] ?? null;
   }
   
   
@@ -68,6 +72,8 @@ class UnoptimizedHotelService extends AbstractHotelService {
    * @noinspection PhpUnnecessaryLocalVariableInspection
    */
   protected function getMetas ( HotelEntity $hotel ) : array {
+    $timer = Timers::getInstance();
+    $timerId = $timer->startTimer('getMetas');
     $metaDatas = [
       'address' => [
         'address_1' => $this->getMeta( $hotel->getId(), 'address_1' ),
@@ -81,7 +87,8 @@ class UnoptimizedHotelService extends AbstractHotelService {
       'coverImage' =>  $this->getMeta( $hotel->getId(), 'coverImage' ),
       'phone' =>  $this->getMeta( $hotel->getId(), 'phone' ),
     ];
-    
+    $timer->endTimer('getMetas', $timerId);
+
     return $metaDatas;
   }
   
@@ -95,6 +102,8 @@ class UnoptimizedHotelService extends AbstractHotelService {
    * @noinspection PhpUnnecessaryLocalVariableInspection
    */
   protected function getReviews ( HotelEntity $hotel ) : array {
+    $timer = Timers::getInstance();
+    $timerId = $timer->startTimer('getReviews');
     // Récupère tous les avis d'un hotel
     $stmt = $this->getDB()->prepare( "SELECT * FROM wp_posts, wp_postmeta WHERE wp_posts.post_author = :hotelId AND wp_posts.ID = wp_postmeta.post_id AND meta_key = 'rating' AND post_type = 'review'" );
     $stmt->execute( [ 'hotelId' => $hotel->getId() ] );
@@ -109,6 +118,7 @@ class UnoptimizedHotelService extends AbstractHotelService {
       'rating' => round( array_sum( $reviews ) / count( $reviews ) ),
       'count' => count( $reviews ),
     ];
+    $timer->endTimer('getReviews', $timerId);
     
     return $output;
   }
@@ -133,6 +143,8 @@ class UnoptimizedHotelService extends AbstractHotelService {
    * @return RoomEntity
    */
   protected function getCheapestRoom ( HotelEntity $hotel, array $args = [] ) : RoomEntity {
+    $timer = Timers::getInstance();
+    $timerId = $timer->startTimer('getCheapestRoom');
     // On charge toutes les chambres de l'hôtel
     $stmt = $this->getDB()->prepare( "SELECT * FROM wp_posts WHERE post_author = :hotelId AND post_type = 'room'" );
     $stmt->execute( [ 'hotelId' => $hotel->getId() ] );
@@ -190,6 +202,7 @@ class UnoptimizedHotelService extends AbstractHotelService {
       if ( intval( $room->getPrice() ) < intval( $cheapestRoom->getPrice() ) )
         $cheapestRoom = $room;
     endforeach;
+    $timer->endTimer('getCheapestRoom', $timerId);
     
     return $cheapestRoom;
   }
