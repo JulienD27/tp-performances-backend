@@ -59,7 +59,7 @@ class UnoptimizedHotelService extends AbstractHotelService {
 
     $timer->endTimer('getMeta', $timerId);
     
-    return $result[0]['meta_value'] ?? null;
+    return $result['meta_value'] ?? null;
   }
   
   
