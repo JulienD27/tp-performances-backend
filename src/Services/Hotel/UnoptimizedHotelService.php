@@ -142,8 +142,9 @@ class UnoptimizedHotelService extends AbstractHotelService {
     $timer = Timers::getInstance();
     $timerId = $timer->startTimer('getCheapestRoom');
     // On charge toutes les chambres de l'hôtel
-    $stmt = $this->getDB()->prepare( "SELECT * FROM wp_posts WHERE post_author = :hotelId AND post_type = 'room' WHERE " );
-    $stmt->execute( [ 'hotelId' => $hotel->getId() ] );
+    $stmt = $this->getDB()->prepare( "SELECT ID, post_author, meta_key, meta_value FROM wp_posts JOIN wp_postmeta ON post_id WHERE wp_posts.post_author = :hotelId AND wp_posts.post_type = 'room' AND wp_postmeta.meta_key = 'surface' AND wp_postmeta.meta_value > :hotelSMin AND wp_postmeta.meta_value < :hotelSMax" );
+    //SELECT * FROM wp_posts WHERE post_author = :hotelId AND post_type = 'room'
+    $stmt->execute( [ 'hotelId' => $hotel->getId(), 'hotelSMin' => $args['surface']['min'], 'hotelSMax' => $args['surface']['max'] ] );
     
     /**
      * On convertit les lignes en instances de chambres (au passage ça charge toutes les données).
@@ -158,7 +159,8 @@ class UnoptimizedHotelService extends AbstractHotelService {
     $filteredRooms = [];
     
     foreach ( $rooms as $room ) {
-      if ( isset( $args['surface']['min'] ) && $room->getSurface() < $args['surface']['min'] )
+      if ( isset( $args['surface']['min'] ))
+          //&& $room->getSurface() < $args['surface']['min']
         continue;
       
       if ( isset( $args['surface']['max'] ) && $room->getSurface() > $args['surface']['max'] )
