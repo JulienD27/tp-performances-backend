@@ -86,12 +86,12 @@ WHERE post_author = :hotelId AND post_type = 'room'" . (!empty($whereClause) ? '
 
 
 
-## Question 5 : Réduction du nombre de requêtes SQL pour `METHOD`
+## Question 5 : Réduction du nombre de requêtes SQL pour `getMetas()`
 
 |                              | **Avant** | **Après** |
 |------------------------------|-----------|-----------|
-| Nombre d'appels de `getDB()` | NOMBRE    | NOMBRE    |
- | Temps de `METHOD`            | TEMPS     | TEMPS     |
+| Nombre d'appels de `getDB()` | 2201      | 601       |
+ | Temps de `getDB()`           | 1.73ms    | 0.41ms    |
 
 ## Question 6 : Création d'un service basé sur une seule requête SQL
 

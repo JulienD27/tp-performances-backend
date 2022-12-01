@@ -48,7 +48,7 @@ class UnoptimizedHotelService extends AbstractHotelService {
    *
    * @return string|null
    */
-  protected function getMeta ( int $userId, string $key ) : ?string {
+  /*protected function getMeta ( int $userId, string $key ) : ?string {
     $timer = Timers::getInstance();
     $timerId = $timer->startTimer('getMeta');
     $db = $this->getDB();
@@ -60,7 +60,7 @@ class UnoptimizedHotelService extends AbstractHotelService {
     $timer->endTimer('getMeta', $timerId);
     
     return $result['meta_value'] ?? null;
-  }
+  }*/
   
   
   /**
@@ -72,23 +72,99 @@ class UnoptimizedHotelService extends AbstractHotelService {
    * @noinspection PhpUnnecessaryLocalVariableInspection
    */
   protected function getMetas ( HotelEntity $hotel ) : array {
-    $timer = Timers::getInstance();
-    $timerId = $timer->startTimer('getMetas');
-    $metaDatas = [
-      'address' => [
-        'address_1' => $this->getMeta( $hotel->getId(), 'address_1' ),
-        'address_2' => $this->getMeta( $hotel->getId(), 'address_2' ),
-        'address_city' => $this->getMeta( $hotel->getId(), 'address_city' ),
-        'address_zip' => $this->getMeta( $hotel->getId(), 'address_zip' ),
-        'address_country' => $this->getMeta( $hotel->getId(), 'address_country' ),
-      ],
-      'geo_lat' =>  $this->getMeta( $hotel->getId(), 'geo_lat' ),
-      'geo_lng' =>  $this->getMeta( $hotel->getId(), 'geo_lng' ),
-      'coverImage' =>  $this->getMeta( $hotel->getId(), 'coverImage' ),
-      'phone' =>  $this->getMeta( $hotel->getId(), 'phone' ),
-    ];
-    $timer->endTimer('getMetas', $timerId);
-    return $metaDatas;
+      $timer = Timers::getInstance();
+      $timerId = $timer->startTimer('getMetas');
+      $metaDatas = [
+          'address' => [
+              'address_1',
+              'address_2',
+              'address_city',
+              'address_zip',
+              'address_country',
+          ],
+          'geo_lat',
+          'geo_lng',
+          'coverImage',
+          'phone',
+      ];
+
+      $cles = [
+          'address_1',
+          'address_2',
+          'address_city',
+          'address_zip',
+          'address_country',
+          'geo_lat',
+          'geo_lng',
+          'coverImage',
+          'phone',
+      ];
+
+
+      $userId = $hotel->getId();
+      $db = $this->getDB();
+      $stmt = $db->prepare("SELECT meta_value FROM wp_usermeta WHERE user_id = :userId AND meta_key = :key");
+      $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+
+      foreach ($cles as $cle) {
+          if ($cle === 'address_1') {
+              $stmt->bindParam('key', $cle, PDO::PARAM_STR);
+              $stmt->execute();
+              $result = $stmt->fetch(PDO::FETCH_ASSOC);
+              $metaDatas['address']['address_1'] = $result['meta_value'];
+          }
+          elseif ($cle === 'address_2') {
+              $stmt->bindParam('key', $cle, PDO::PARAM_STR);
+              $stmt->execute();
+              $result = $stmt->fetch(PDO::FETCH_ASSOC);
+              $metaDatas['address']['address_2'] = $result['meta_value'];
+          }
+          elseif ($cle === 'address_city') {
+              $stmt->bindParam('key', $cle, PDO::PARAM_STR);
+              $stmt->execute();
+              $result = $stmt->fetch(PDO::FETCH_ASSOC);
+              $metaDatas['address']['address_city'] = $result['meta_value'];
+          }
+          elseif ($cle === 'address_zip') {
+              $stmt->bindParam('key', $cle, PDO::PARAM_STR);
+              $stmt->execute();
+              $result = $stmt->fetch(PDO::FETCH_ASSOC);
+              $metaDatas['address']['address_zip'] = $result['meta_value'];
+          }
+          elseif ($cle === 'address_country') {
+              $stmt->bindParam('key', $cle, PDO::PARAM_STR);
+              $stmt->execute();
+              $result = $stmt->fetch(PDO::FETCH_ASSOC);
+              $metaDatas['address']['address_country'] = $result['meta_value'];
+          }
+          elseif ($cle === 'geo_lat') {
+              $stmt->bindParam('key', $cle, PDO::PARAM_STR);
+              $stmt->execute();
+              $result = $stmt->fetch(PDO::FETCH_ASSOC);
+              $metaDatas['geo_lat'] = $result['meta_value'];
+          }
+          elseif ($cle === 'geo_lng') {
+              $stmt->bindParam('key', $cle, PDO::PARAM_STR);
+              $stmt->execute();
+              $result = $stmt->fetch(PDO::FETCH_ASSOC);
+              $metaDatas['geo_lng'] = $result['meta_value'];
+          }
+          elseif ($cle === 'coverImage') {
+              $stmt->bindParam('key', $cle, PDO::PARAM_STR);
+              $stmt->execute();
+              $result = $stmt->fetch(PDO::FETCH_ASSOC);
+              $metaDatas['coverImage'] = $result['meta_value'];
+          }
+          elseif ($cle === 'phone') {
+              $stmt->bindParam('key', $cle, PDO::PARAM_STR);
+              $stmt->execute();
+              $result = $stmt->fetch(PDO::FETCH_ASSOC);
+              $metaDatas['phone'] = $result['meta_value'];
+          }
+      }
+
+      $timer->endTimer('getMetas', $timerId);
+      return $metaDatas;
   }
   
   
