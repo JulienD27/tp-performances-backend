@@ -6,9 +6,9 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 **Choix des méthodes à analyser** :
 
-- `getCheapest` 16.53s
-- `getReviews` 8.76s
-- `getMetas` 4.29s
+- `getCheapestRoom()` 16.53s
+- `getReviews()` 8.76s
+- `getMetas()` 4.29s
 
 
 
@@ -27,55 +27,61 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 **Temps de chargement globaux** 
 
-- **Avant** TEMPS
+- **Avant** 26.4
 
-- **Après** TEMPS
+- **Après** 18.9s
 
 
-#### Amélioration de la méthode `METHOD` et donc de la méthode `METHOD` :
+#### Amélioration de la méthode `getMeta()` et donc de la méthode `getMetas()` :
 
-- **Avant** TEMPS
+- **Avant** 3.52
 
 ```sql
--- REQ SQL DE BASE
+SELECT * FROM wp_usermeta
 ```
 
-- **Après** TEMPS
+- **Après** 1.43
 
 ```sql
--- NOUVELLE REQ SQL
-```
-
-
-
-#### Amélioration de la méthode `METHOD` :
-
-- **Avant** TEMPS
-
-```sql
--- REQ SQL DE BASE
-```
-
-- **Après** TEMPS
-
-```sql
--- NOUVELLE REQ SQL
+SELECT meta_value FROM wp_usermeta WHERE user_id = :userId AND meta_key = :meta_key;
 ```
 
 
 
-#### Amélioration de la méthode `METHOD` :
+#### Amélioration de la méthode `getReviews()` :
 
-- **Avant** TEMPS
+- **Avant** 8.76
 
 ```sql
--- REQ SQL DE BASE
+SELECT * FROM wp_posts, wp_postmeta WHERE wp_posts.post_author = :hotelId AND wp_posts.ID = wp_postmeta.post_id AND meta_key = 'rating' AND post_type = 'review';
 ```
 
-- **Après** TEMPS
+- **Après** 5.43
 
 ```sql
--- NOUVELLE REQ SQL
+SELECT AVG(meta_value), COUNT(meta_value) FROM wp_posts, wp_postmeta WHERE wp_posts.post_author = :hotelId AND wp_posts.ID = wp_postmeta.post_id AND meta_key = 'rating' AND post_type = 'review'
+```
+
+
+
+#### Amélioration de la méthode `getCheapestRoom()` :
+
+- **Avant** 16.53
+
+```sql
+SELECT * FROM wp_posts WHERE post_author = :hotelId AND post_type = 'room';
+```
+
+- **Après** 10.55
+
+```sql
+SELECT * FROM wp_posts
+               INNER JOIN wp_postmeta as surfaceData ON surfaceData.post_id = wp_posts.ID AND surfaceData.meta_key = 'surface'
+               INNER JOIN wp_postmeta as priceData ON priceData.post_id = wp_posts.ID AND priceData.meta_key = 'price'
+               INNER JOIN wp_postmeta as roomsData ON roomsData.post_id = wp_posts.ID AND roomsData.meta_key = 'bedrooms_count'
+               INNER JOIN wp_postmeta as bathRoomsData ON bathRoomsData.post_id = wp_posts.ID AND bathRoomsData.meta_key = 'bathrooms_count'
+               INNER JOIN wp_postmeta as typeData ON typeData.post_id = wp_posts.ID AND typeData.meta_key = 'type'
+WHERE post_author = :hotelId AND post_type = 'room'" . (!empty($whereClause) ? ' AND ' . implode(' AND ', $whereClause) : '') . " ORDER BY priceData.meta_value ASC LIMIT 1
 ```
 
 
