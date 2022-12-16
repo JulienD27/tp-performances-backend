@@ -167,7 +167,6 @@ class UnoptimizedHotelService extends AbstractHotelService {
       return $metaDatas;
   }
   
-  
   /**
    * Récupère les données liées aux évaluations des hotels (nombre d'avis et moyenne des avis)
    *
